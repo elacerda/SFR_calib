@@ -1,6 +1,9 @@
+inspir
 runs
 *.aux
 *.bbl
 *.blg
 *.dvi
 *.log
+*.fdb_latexmk
+*.synctex.gz
