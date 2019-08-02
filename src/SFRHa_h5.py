@@ -311,3 +311,36 @@ if __name__ == '__main__':
     # f.tight_layout()
     f.savefig('Z_k_bases.%s' % outputImgSuffix, dpi=300)
     plt.close(f)
+
+# plt.clf()
+# ax = plt.gca()
+# plotConf__Z = [
+#     dict(c='b', lw=1), dict(c='g', lw=1), dict(c='r', lw=1),
+#     dict(c='y', lw=1), dict(c='k', lw=2), dict(c='c', lw=1),
+# ]
+# Z = [0.0004, 0.001, 0.004, 0.008, 0.0190, 0.03]
+# for i in range(6):
+#     _k = k[i]
+#     d = plotConf__Z[i]
+#     x = elines.loc[m, 'log_Mass_corr']
+#     y = elines.loc[m, 'log_L_Ha_cor'] + np.log10(_k)
+#     xm, ym = ma_mask_xyz(x, y)
+#     rs = runstats(xm.compressed(), ym.compressed(), smooth=True, sigma=1.2, debug=True, gs_prc=True, frac=0.05, poly1d=True)
+#     p = [rs.poly1d_median_slope, rs.poly1d_median_intercept]
+#     label = r'Z $=\ %.2f\ Z_\odot$' % (Z[i]/0.019)
+#     #ax.plot(rs.xS, rs.yS, label=label,  **d)
+#     ax.plot(xm.compressed(), np.polyval(p, xm.compressed()), label=label, **d)
+# x = elines.loc[m, 'log_Mass_corr']
+# y = elines.loc[m, 'lSFR']
+# xm, ym = ma_mask_xyz(x, y)
+# rs = runstats(xm.compressed(), ym.compressed(), smooth=True, sigma=1.2, debug=True, gs_prc=True, frac=0.05, poly1d=True)
+# p = [rs.poly1d_median_slope, rs.poly1d_median_intercept]
+# #ax.plot(rs.xS, rs.yS, c='k', lw=4, ls='--', label='orig')
+# ax.plot(xm.compressed(), np.polyval(p, xm.compressed()), c='k', lw=2, ls='--', label='orig')
+# ax.legend(loc=2, fontsize=15, ncol=2, borderpad=0, frameon=False)
+# plot_text_ax(ax, r'%d SF galaxies' % (m.astype('int').sum()), 0.99, 0.01, 20, 'bottom', 'right', 'k')
+# ax.scatter(elines.loc[m, 'log_Mass_corr'], elines.loc[m, 'lSFR'], c='grey', s=10)
+# ax.set_xlabel(r'$\log ({\rm M}_\star/{\rm M}_{\odot})$', fontsize=20)
+# ax.set_ylabel(r'$\log ({\rm SFR}_{\rm H\alpha}/{\rm M}_{\odot}/{\rm yr})$', fontsize=20)
+# ax.set_xlim([8.5, 11.5])
+# ax.set_ylim([-2, 2])
