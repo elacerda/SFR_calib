@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 #
 # Calculate the k for SFR(Halpha) = k . L(Halpha)
@@ -39,7 +40,7 @@ latex_text_width = latex_text_width_pt/latex_ppi
 golden_mean = 0.5 * (1. + 5**0.5)
 fs = 10
 bases = [ 'Padova1994.chab', 'Padova1994.salp', 'Padova2000.chab', 'Padova2000.salp' ]
-baseFile    = '/home/lacerda/LOCAL/data/Base.bc03.h5'
+baseFile    = '/home/lacerda/LOCAL/data/h5/Base.bc03.h5'
 L_sun = 3.826e+33
 h = 6.6260755e-27
 c = 29979245800.0
@@ -160,13 +161,13 @@ def read_hdf5(base_file, base_group):
 if __name__ == '__main__':
     k_SFR__bases_Z = {k: None for k in bases}
     Z__bases = {k: None for k in bases}
-    f_all = open('LHa_SFR_conversion.csv', 'w+')
-    print('BaseConf,Z,k_SFR_Msun_yr,k_SFR_ergs_s,fNH_10Myr,age_fNH_95_Myr,age_fNH_98_Myr,age_fNH_99', file=f_all)
+    f_all = open('LHa_SFR_conversion.csv', 'w')
+    print('BaseConf, Z, k_SFR_Msun_yr, k_SFR_ergs_s, fNH_10Myr, age_fNH_95_Myr, age_fNH_98_Myr, age_fNH_99', file=f_all)
     for i, b in enumerate(bases):
         base = read_hdf5(baseFile, b)
 
         max_yr = base.ageBase[-1]
-        max_yr = 1e7
+        max_yr = 10**6.5
         mask = base.l_ssp <= 912         # Angstrom
         f_ssp = base.f_ssp[:,:,mask]
         l = base.l_ssp[mask]
@@ -176,9 +177,26 @@ if __name__ == '__main__':
         k_SFR__bases_Z[b] = k_SFR__Z
         Z__bases[b] = base.metBase
 
+        ###############################
+        #### fit logZ x k relation ####
+        ###############################
+        interval_sel = False
+        interval_x = [-0.7, 0.5]
+        x = Z__bases[b]/Z__bases[b][-2]
+        y = k_SFR__bases_Z[b]
+        sel = x > -999
+        if interval_sel:
+            sel = (x > interval_x[0]) & (x < interval_x[1])
+        X = x[sel]
+        Y = y[sel]
+        p1d = np.polyfit(X, Y, 1)
+        p2d = np.polyfit(X, Y, 2)
+        p3d = np.polyfit(X, Y, 3)
+        pexp = np.polyfit(np.log(X), Y, 1)
+
         fout = b + '.csv'
         with open(fout, 'w+') as f:
-            print('Z,k_SFR_Msun_yr,k_SFR_ergs_s,fNH_10Myr,age_fNH_95_Myr,age_fNH_98_Myr,age_fNH_99', file=f)
+            print('Z, k_SFR_Msun_yr, k_SFR_ergs_s, fNH_10Myr, age_fNH_95_Myr, age_fNH_98_Myr, age_fNH_99', file=f)
             for i, Z in enumerate(base.metBase):
                 age95 = base.ageBase[np.where(Nh__Zt[i] / Nh__Zt[i, -1] <= 0.95)][-1]
                 age98 = base.ageBase[np.where(Nh__Zt[i] / Nh__Zt[i, -1] <= 0.98)][-1]
@@ -191,7 +209,13 @@ if __name__ == '__main__':
         N_rows, N_cols = 1, 1
         gs = gridspec.GridSpec(N_rows, N_cols, left=left, bottom=bottom, right=right, top=top, wspace=0., hspace=0.)
         ax = plt.subplot(gs[0])
-        ax.plot(np.log10(base.metBase/base.metBase[-2]), k_SFR__Z, 'o-k')
+        x = base.metBase/base.metBase[-2]
+        ax.plot(np.log10(x), k_SFR__Z, 'o-k')
+        ax.plot(np.log10(x), np.polyval(p1d, x), 'b--', label='fit 1d')
+        ax.plot(np.log10(x), np.polyval(p2d, x), 'g--', label='fit 2d')
+        ax.plot(np.log10(x), np.polyval(p3d, x), 'y--', label='fit 3d')
+        ax.plot(np.log10(x), np.polyval(pexp, np.log(x)), 'r--', label='fit exp')
+        ax.legend(loc=2, fontsize=fs, ncol=1, borderpad=0, frameon=False)
         tick_params = dict(labelsize=fs, axis='both', which='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=True, labeltop=False, labelleft=True, labelright=False)
         ax.tick_params(**tick_params)
         ax.set_xlabel(r'$\log$ Z/Z$_\odot$', fontsize=fs)
@@ -205,7 +229,13 @@ if __name__ == '__main__':
         N_rows, N_cols = 1, 1
         gs = gridspec.GridSpec(N_rows, N_cols, left=left, bottom=bottom, right=right, top=top, wspace=0., hspace=0.)
         ax = plt.subplot(gs[0])
-        ax.plot(base.metBase/base.metBase[-2], k_SFR__Z, 'o-k')
+        x = base.metBase/base.metBase[-2]
+        ax.plot(x, k_SFR__Z, 'o-k')
+        ax.plot(x, np.polyval(p1d, x), 'b--', label='fit 1d')
+        ax.plot(x, np.polyval(p2d, x), 'g--', label='fit 2d')
+        ax.plot(x, np.polyval(p3d, x), 'y--', label='fit 3d')
+        ax.plot(x, np.polyval(pexp, np.log(x)), 'r--', label='fit exp')
+        ax.legend(loc=2, fontsize=fs, ncol=1, borderpad=0, frameon=False)
         tick_params = dict(labelsize=fs, axis='both', which='both', direction='in', bottom=True, top=True, left=True, right=True, labelbottom=True, labeltop=False, labelleft=True, labelright=False)
         ax.tick_params(**tick_params)
         ax.set_xlabel(r'Z/Z$_\odot$', fontsize=fs)
