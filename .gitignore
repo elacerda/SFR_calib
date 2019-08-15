@@ -1,5 +1,6 @@
 inspir
 runs
+*.csv
 *.aux
 *.bbl
 *.blg
